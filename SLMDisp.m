@@ -1,7 +1,7 @@
 function SLMDisp(ImageData)
 BNS_OpenSLM();
 BNS_SetPower(true);
-handles.slm_lut = BNS_ReadLUTFile('C:\BNSMatlabSDK\LUT_Files\slm7846.LUT');
+handles.slm_lut = BNS_ReadLUTFile('C:\BNSMatlabSDK\LUT_Files\linear.LUT');
 
 %Load a series of images to the hardware memory - we will sequence
 %through these images later when the start/stop button is clicked
@@ -15,7 +15,7 @@ handles.slm_lut = BNS_ReadLUTFile('C:\BNSMatlabSDK\LUT_Files\slm7846.LUT');
 % end
 
 
-BNS_LoadImageFrame(1, ImageData, handles);
+BNS_LoadImageFrame(0, ImageData, handles);
 
 %Initalize the data on the SLM to be the first pattern
 BNS_SendImageFrameToSLM(0);

@@ -8,8 +8,8 @@ CCDHeight = 600;
 % ImageIndex = 1;
 % EArray = zeros(64,64,16);
 % phase = zeros(512,512);
-rectSideLen = 8; % the length of unit rectangle on SLM display. All pixels in this rectangle has the same phase
-phaseStep = 8; % the step size of phase modulation.
+rectSideLen = 16; % the length of unit rectangle on SLM display. All pixels in this rectangle has the same phase
+phaseStep = 64; % the step size of phase modulation.
 E = zeros(256/phaseStep,1);
 filePath = 'C:\Documents and Settings\zeeshan\Desktop\SLMCCDData062813\';
 wmatrix = gauss2D(CCDHeight,CCDWidth,10);
@@ -41,7 +41,7 @@ set(vidobj, 'FramesPerTrigger', 1);
 set(vidobj, 'TriggerRepeat', Inf);
 triggerconfig(vidobj, 'manual');
 start(vidobj);
-% preview(vidobj);
+preview(vidobj);
 % getsnapshot(vidobj); %take a first snapshot to ensure camera has started
 % pause;
 % stoppreview(vidobj);
