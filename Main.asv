@@ -8,12 +8,13 @@ CCDHeight = 600;
 % ImageIndex = 1;
 % EArray = zeros(64,64,16);
 % phase = zeros(512,512);
-rectSideLen = 16; % the length of unit rectangle on SLM display. All pixels in this rectangle has the same phase
-phaseStep = 64; % the step size of phase modulation.
+rectSideLen = 8; % the length of unit rectangle on SLM display. All pixels in this rectangle has the same phase
+phaseStep = 8; % the step size of phase modulation.
 E = zeros(256/phaseStep,1);
-filePath = 'C:\Documents and Settings\zeeshan\Desktop\SLMCCDData062813\';
-wmatrix = gauss2D(CCDHeight,CCDWidth,10);
-ImageData = Mosaic(rectSideLen,phaseStep);
+filePath = 'C:\Documents and Settings\zeeshan\Desktop\SLMCCDData062813_3\';
+wmatrix = gauss2D(CCDHeight,CCDWidth,15);
+ImageData = uint8(zeros(512,512));
+% ImageData = Mosaic(rectSideLen,phaseStep);
 %load('C:\Documents and Settings\zeeshan\My Documents\MATLAB\SLMCCD.v3\weightingMatrix.mat');
 
 %% initilize SLM
@@ -41,7 +42,7 @@ set(vidobj, 'FramesPerTrigger', 1);
 set(vidobj, 'TriggerRepeat', Inf);
 triggerconfig(vidobj, 'manual');
 start(vidobj);
-preview(vidobj);
+% preview(vidobj);
 % getsnapshot(vidobj); %take a first snapshot to ensure camera has started
 % pause;
 % stoppreview(vidobj);
@@ -80,13 +81,21 @@ for n = 1:rectSideLen:512
             
         end
         E_index = (E == max(E));
-        ImageData(n:n+rectSideLen-1,m:m+rectSideLen-1) = phaseStep*(find(E_index)-1);
-        % Subtracting 1 because the LUT has range the index of E starts at 1
+        if previousEmax <= max(E)
+            ImageData(n:n+rectSideLen-1,m:m+rectSideLen-1) = phaseStep*(find(E_index)-1);
+            % Subtracting 1 because the LUT has range the index of E starts at 1
+        else
+            ImageData = previousImageData;
+            % If this iteration has less maximal efficiency then use the
+            % ImageData from the last iteration.
+        end
         
+        
+        previousEmax = max(E);
+        previousImageData = ImageData;
         % EArray(n,m,:) = E;
     end
 end
 % save('C:\Documents and Settings\zeeshan\Desktop\SLMCCDData062713\phase.mat','phase')
 stop(vidobj);
 BNS_ClosesSLM();
-toc
