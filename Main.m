@@ -16,7 +16,8 @@ wmatrix = gauss2D(CCDHeight,CCDWidth,15);
 % ImageData = uint8(zeros(512,512));
 ImageData = Mosaic(rectSideLen,phaseStep);
 %load('C:\Documents and Settings\zeeshan\My Documents\MATLAB\SLMCCD.v3\weightingMatrix.mat');
-
+previousEmax = 0;
+previousImageData = ImageData; 
 %% initilize SLM
 FrameNum = 0;
 disp('initializing SLM...');
