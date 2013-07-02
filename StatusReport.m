@@ -12,25 +12,27 @@ fprintf(fileID,'%3d %3d %5d %10f %10f\r\n',row, col, phase, efficiency, controlE
 % ImageIndexStatus = sprintf('%d images has been sent to the SLM', ImageIndex);
 % disp(ImageIndexStatus);
 
-%% Pixel number
-PixelNumStatus = sprintf('Current SLM block has the top-left pixel of (%d, %d)',row,col);
-disp(PixelNumStatus);
+
 
 %% Write CCD capture to disk
-% option 1: save every image 
+% option 1: save every image
 % imageName = sprintf('r%dc%dph%d.jpg',row,col,phase);
-% imageFilePath = strcat(filePath, imageName); 
+% imageFilePath = strcat(filePath, imageName);
 % imwrite(currentImage,imageFilePath);
 
 % option 2: save only one optimized image within each iteration
-if phase == 0
-    imageName = sprintf('r%dc%dph%d.jpg',row,col,phase);
-    imageFilePath = strcat(filePath, imageName);
-    imwrite(currentImage,imageFilePath);
-    
-    imageName = sprintf('blankr%dc%d.jpg',row,col);
-    imageFilePath = strcat(filePath, imageName);
-    imwrite(blank,imageFilePath);
-end
+% if phase == 0 & (mod(row,64) == 1) & (mod(col,64) == 1)
+imageName = sprintf('r%dc%dph%d.jpg',row,col,phase);
+imageFilePath = strcat(filePath, imageName);
+imwrite(currentImage,imageFilePath);
+
+imageName = sprintf('blankr%dc%d.jpg',row,col);
+imageFilePath = strcat(filePath, imageName);
+imwrite(blank,imageFilePath);
+
+%% Pixel number
+PixelNumStatus = sprintf('Current SLM block has the top-left pixel of (%d, %d)',row,col);
+disp(PixelNumStatus);
+% end
 end
 

@@ -11,7 +11,7 @@ src.AutoExposure = 106;
 src.Brightness = 339;
 % src.Shutter = 3;
 src.ShutterControl = 'absolute';
-src.ShutterAbsolute = 0.002;
+src.ShutterAbsolute = 0.01;
 preview(vidobj);
 % getsnapshot(vidobj); %take a first snapshot to ensure camera has started
 % pause;

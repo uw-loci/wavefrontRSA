@@ -10,14 +10,15 @@ CCDHeight = 600;
 % ImageIndex = 1;
 % EArray = zeros(64,64,16);
 % phase = zeros(512,512);
-rectSideLen = 16; % the length of unit rectangle on SLM display. All pixels in this rectangle has the same phase
-phaseStep = 8; % the step size of phase modulation.
+rectSideLen = 32; % the length of unit rectangle on SLM display. All pixels in this rectangle has the same phase
+phaseStep = 128; % the step size of phase modulation.
 E = zeros(256/phaseStep,1);
-filePath = 'C:\Documents and Settings\zeeshan\Desktop\SLMCCDData070113\';
-wmatrix = gauss2D(CCDHeight,CCDWidth,15);
-% ImageData = uint8(zeros(512,512));
+filePath = 'C:\Documents and Settings\zeeshan\Desktop\SLMCCDData070213_2\';
+wmatrix = gauss2D(CCDHeight,CCDWidth,20);
+
 blank = uint8(zeros(512,512));
-ImageData = Mosaic(rectSideLen,phaseStep);
+ImageData = uint8(zeros(512,512));
+% ImageData = Mosaic(rectSideLen,phaseStep);
 %load('C:\Documents and Settings\zeeshan\My Documents\MATLAB\SLMCCD.v3\weightingMatrix.mat');
 previousEmax = 0;
 previousImageData = ImageData; 
@@ -34,7 +35,18 @@ BNS_LoadImageFrame(2, blank, handles);
 disp('initializing CCD...');
 vidobj = videoinput('dcam', 1, 'Y8_800x600');
 
-% set the properties of video object
+% set the properties of video object w/o diffuser 
+% src = getselectedsource(vidobj);
+% src.GainMode = 'manual';
+% src.FrameTimeout = 500000;
+% src.Gain = 400;
+% src.AutoExposure = 106;
+% src.Brightness = 339;
+% % src.Shutter = 3;
+% src.ShutterControl = 'absolute';
+% src.ShutterAbsolute = 0.002;
+
+% set the properties of video object w/ diffuser 
 src = getselectedsource(vidobj);
 src.GainMode = 'manual';
 src.FrameTimeout = 500000;
@@ -43,7 +55,9 @@ src.AutoExposure = 106;
 src.Brightness = 339;
 % src.Shutter = 3;
 src.ShutterControl = 'absolute';
-src.ShutterAbsolute = 0.002;
+src.ShutterAbsolute = 0.01;
+
+% set trigger mode 
 set(vidobj, 'FramesPerTrigger', 1);
 set(vidobj, 'TriggerRepeat', Inf);
 triggerconfig(vidobj, 'manual');
@@ -89,7 +103,7 @@ for n = 1:rectSideLen:512
             FrameNum = mod(FrameNum + 1, 2);
             
             %% display the blank control 
-                        
+            if (p == 0) && (mod(n,64) == 1) && (mod(n,64) == 1)             
             % sending image to SLM
             BNS_SendImageFrameToSLM(2);
             pause(0.1);
@@ -104,7 +118,7 @@ for n = 1:rectSideLen:512
             
             % display status reports 
             StatusReport(n, m, p, currentE , controlE, fileID, snapshot, blank, filePath);
-            
+            end 
         end
         E_index = (E == max(E));
         if previousEmax <= max(E)
