@@ -1,4 +1,4 @@
-function StatusReport( row,col,phase,efficiency, controlEfficiency, fileID,currentImage,blank, filePath)
+function StatusReport( row,col,phase,efficiency, fileID,currentImage,blank, filePath)
 %STATUSREPORT accepts image index as the input argument and displays the
 %current pixel number, current image index, and saves the current CCD
 %capture to C:\Documents and Settings\zeeshan\My
@@ -6,7 +6,7 @@ function StatusReport( row,col,phase,efficiency, controlEfficiency, fileID,curre
 %hundred images sent to the SLM.
 
 %% Write E to a text file
-fprintf(fileID,'%3d %3d %5d %10f %10f\r\n',row, col, phase, efficiency, controlEfficiency);
+fprintf(fileID,'%3d %3d %5d %10f\r\n',row, col, phase, efficiency);
 
 %% Image index
 % ImageIndexStatus = sprintf('%d images has been sent to the SLM', ImageIndex);
