@@ -24,9 +24,9 @@ BNS_SendImageFrameToSLM(0);
 %     BNS_SendImageFrameToSLM(mod(i,6));
 %     pause;
 % end
-pause; 
-
-BNS_ClosesSLM();
+% pause; 
+% 
+% BNS_ClosesSLM();
 end
 
 

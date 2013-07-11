@@ -13,7 +13,7 @@ src.Brightness = 339;
 src.ShutterControl = 'absolute';
 src.ShutterAbsolute = 0.01;
 preview(vidobj);
-% getsnapshot(vidobj); %take a first snapshot to ensure camera has started
+testshot = getsnapshot(vidobj); %take a first snapshot to ensure camera has started
 % pause;
 % stoppreview(vidobj);
 %%
