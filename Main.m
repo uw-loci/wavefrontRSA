@@ -148,8 +148,10 @@ phaseMaskPath = strcat(filePath,'phaseMask.mat');
 save(phaseMaskPath,'ImageData');
 % stoppreview(vidobj);
 stop(vidobj);
+
 try 
 BNS_ClosesSLM();
 catch
 end 
 time = toc;
+sendEmail
