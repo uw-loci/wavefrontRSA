@@ -14,8 +14,8 @@ handles.slm_lut = BNS_ReadLUTFile('C:\BNSMatlabSDK\LUT_Files\linear.LUT');
 %    	BNS_LoadImageFrame(pattern, ImageData, handles);
 % end
 
-load('primarySpherical.mat');
-ImageData = cdata;
+% load('primarySpherical.mat');
+% ImageData = cdata;
 BNS_LoadImageFrame(0, ImageData, handles);
 
 %Initalize the data on the SLM to be the first pattern
