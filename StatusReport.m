@@ -1,4 +1,4 @@
-function StatusReport(itr, efficiency, controlEfficiency, fileID, currentImage, controlImage, filePath)
+function StatusReport(itr, row, col, phase, currentR, controlR, fileID)
 %STATUSREPORT accepts image index as the input argument and displays the
 %current pixel number, current image index, and saves the current CCD
 %capture to C:\Documents and Settings\zeeshan\My
@@ -6,7 +6,7 @@ function StatusReport(itr, efficiency, controlEfficiency, fileID, currentImage, 
 %hundred images sent to the SLM.
 
 %% Write E to a text file
-fprintf(fileID,'%3d %10f %10f\r\n', itr, efficiency, controlEfficiency);
+fprintf(fileID,'%3d %3d %3d %5d %10f %10f\r\n',itr, row, col, phase, currentR, controlR);
 
 %% Image index
 % ImageIndexStatus = sprintf('%d images has been sent to the SLM', ImageIndex);
@@ -22,19 +22,23 @@ fprintf(fileID,'%3d %10f %10f\r\n', itr, efficiency, controlEfficiency);
 
 % option 2: save only one optimized image within each iteration
 % if phase == 0
-%% display pixel number
+    %% display pixel number
 %     PixelNumStatus = sprintf('Current SLM block has the top-left pixel of (%d, %d)',row,col);
 %     disp(PixelNumStatus);
-
-
-imageName = sprintf('%05d.jpg',itr);
-imageFilePath = strcat(filePath, imageName);
-imwrite(currentImage,imageFilePath);
-
-imageName = sprintf('ctrl%05d.jpg',itr);
-imageFilePath = strcat(filePath, imageName);
-imwrite(controlImage,imageFilePath);
-
+    
+% if (mod(row,32) == 1) && (mod(col,32) == 1)
+%     imageName = sprintf('transItr%dr%dc%dph%d.tif',itr,row,col,phase);
+%     imageFilePath = strcat(filePath, imageName);
+%     imwrite(snapshotTrans,imageFilePath,'tiff');
+%     
+%     imageName = sprintf('reflItr%dr%dc%dph%d.tif',itr,row,col,phase);
+%     imageFilePath = strcat(filePath, imageName);
+%     imwrite(snapshotRefl,imageFilePath,'tiff');
+%     
+%     imageName = sprintf('blankItr%dr%dc%d.tif',itr,row,col);
+%     imageFilePath = strcat(filePath, imageName);
+%     imwrite(blank,imageFilePath,'tiff');
+% end
 % end
 end
 

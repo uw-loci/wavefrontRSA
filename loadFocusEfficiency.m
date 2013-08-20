@@ -1,5 +1,6 @@
-file = dlmread('C:\Documents and Settings\zeeshan\Desktop\SLMCCDData071313_2\FocusEfficiency_copy.txt');
-plot(file(:,4),'r')
+file = dlmread('C:\Documents and Settings\zeeshan\Desktop\reflectance0812\RTratio.txt');
+plot(file(:,5),'r')
 hold on 
-plot(file(:,5),'k')
-legend('phase mask','control')
+plot(file(:,6),'g')
+plot(file(:,7),'k')
+legend('Current Reflectance','Best Reflectance','Control')
