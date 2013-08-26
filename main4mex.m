@@ -1,29 +1,42 @@
 function [finalMask] = Main(rectSideLen,phaseStep,nIterations,folder, useZeros) %% initilize
+% tic;
+% stop(vidobj);
+% declare extrinsic functions
+coder.extrinsic('strcat');
+coder.extrinsic('loadlibrary');
+coder.extrinsic('libpointer');
+coder.extrinsic('calllib');
+coder.extrinsic('videoinput');
+coder.extrinsic('preview');
+coder.extrinsic('triggerconfig');
+coder.extrinsic('start');
+coder.extrinsic('triggerconfig');
+coder.extrinsic('sprintf');
+coder.extrinsic('fopen');
+coder.extrinsic('fprintf');
+coder.extrinsic('trigger');
+coder.extrinsic('getdata');
+coder.extrinsic('unloadlibrary');
+coder.extrinsic('stop');
 
 
-%------------------------------------------------------------------------%
-%                       User Settings                                    %
-%------------------------------------------------------------------------%
 
-% SLM settings 
+pause on;
+% profile off;
+disp('Initializing variables...');
+
+% change the following parameters
+% CCDWidth = 1024;
+% CCDHeight = 768;
 upperbound = 1;
 lowerbound = 512;
 leftbound = 1;
 rightbound = 512;
+% rectSideLen = 16; % the length of unit rectangle on SLM display. All pixels in this rectangle has the same phase
+% phaseStep = 16; % the step size of phase modulation.
+% nIterations = 1;
+% R = zeros(256/phaseStep,1);
 
-% Camera settings 
-gain = 384;
-shutter = 120; 
-
-
-%------------------------------------------------------------------------%
-%                       Advanced Settings                                %
-%------------------------------------------------------------------------%
-
-
-disp('Initializing variables...');
-pause on;
-profile off;
 filePath = strcat('C:\Documents and Settings\zeeshan\Desktop\',folder);
 mkdir(filePath);
 bestR = 0;
@@ -41,16 +54,68 @@ else
 end
 blank = uint8(zeros(512,512));
 % wmatrix = gauss2D(CCDHeight,CCDWidth,5);
-% R = zeros(256/phaseStep,1);
+
 
 % previousEmax = 0;
 % previousImageData = currentMask;
 %% initilize SLM
 FrameNum = 0;
 disp('initializing SLM...');
+% BNS_OpenSLM();
+%==========================================================================
+%=   FUNCTION:  BNS_OpenSLM()
+%=
+%=   PURPOSE: Opens all the Boulder Nonlinear Systems SLM driver boards 
+%=            in the system.  Assumes the devices are nematic (phase) 
+%=            SLMs.  Loads the library "Interface.dll" into the MATLAB
+%=            workspace.
+%=            
+%=   OUTPUTS: 
+%=
+%==========================================================================
+    % load the Interface dll to access the BNS functions
+    loadlibrary('C:\BNSMatlabSDK\Interface.dll','C:\BNSMatlabSDK\Interface.h');
+    
+    % call the constructor passing the LC type, and the toggle rate
+    % where LCType is 0 for Amplitude SLMs, and 1 for phase SLMs. The
+    % toggle rate should be 6 for Phase SLMs, and is ignored for 
+    % Amplitude SLMs (so it can also be 3)
+    LCType = int32(1); 
+    TrueFrames = int32(3); 
+    calllib('Interface','Constructor',LCType, TrueFrames);
 
-BLopenSLM();
-BLsetSLMPower(true);
+    % Set the download mode. Passing true will enable continuous download
+    % mode, and passing false will disable continuous download mode. See
+    % the manual for more information...
+    calllib('Interface','SetDownloadMode', false); 
+    
+	% Set the run parameters. The first parameter is the FrameRate, 
+    % which determines how fast the SLM will switch from one image to 
+    % the next.  The second parameter is the LaserDuty, which determines 
+    % the percentage of time that the laser is on. 
+    % The third parameter is the TrueLaserGain which sets the voltage
+	% of the laser output during the true viewing of the image. 
+    % The last parameter is the InverseLaserGain which sets the voltage 
+    % of the laser output during the inverse viewing of the image. 
+    FrameRate = int32(1000);    %number from 1 - 1000 (Hz)
+    LaserDuty = int32(50);      %number from 0-100 (Percent laser on)
+    TrueLaserGain = int32(255); %number from 0-255 
+    InverseLaserGain = int32(0);%number from 0 - 255
+    calllib('Interface','SetRunParam', FrameRate, LaserDuty, TrueLaserGain, InverseLaserGain);
+    
+    
+% BNS_SetPower(true);
+%==========================================================================
+%=   FUNCTION: BNS_SetPower(bPower)
+%=
+%=   PURPOSE: Toggles the SLM power state
+%=
+%=   INPUTS:  a boolean state - true = power up, false = power down
+%=
+%=  OUTPUTS:  
+%=
+%========================================================================== 
+    calllib('Interface','SLMPower',true);  
     
     
 % handles.slm_lut = BNS_ReadLUTFile('C:\BNSMatlabSDK\LUT_Files\linear.LUT');
@@ -61,11 +126,10 @@ BLsetSLMPower(true);
 % BNS_LoadImageFrame(2, blank, handles);
 
 % loop to replace the three lines immediately above 
-
-imageMatrix = blank;
-
-for imageFrame = 0:2
-    BLloadImageFrame(imageFrame,imageMatrix)
+ImageMatrix = blank;
+for ImageFrame = 0:2
+    pImage = libpointer('uint8Ptr',ImageMatrix);
+    calllib('Interface','WriteFrameBuffer',ImageFrame, pImage, 512);
 end 
 
 %% initilize CCD
@@ -84,8 +148,22 @@ disp('initializing CCD...');
 % triggerconfig(vidTrans, 'manual');
 % start(vidTrans);
 
-vidRefl = BLOpenCCD(1,'Y8_1024x768');
-BLConfigCCD( vidRefl, '30', gain, shutter);
+vidRefl = videoinput('dcam', 2, 'Y8_800x600');
+srcRefl = getselectedsource(vidRefl);
+preview(vidRefl);
+set(vidRefl, 'FramesPerTrigger', 1);
+set(vidRefl, 'TriggerRepeat', Inf);
+triggerconfig(vidRefl, 'manual');
+start(vidRefl);
+srcRefl.GainMode = 'manual';
+srcRefl.FrameTimeout = 5000;
+srcRefl.AutoExposure = 90;
+srcRefl.Brightness = 0;
+srcRefl.Gain = 611;
+srcRefl.ShutterMode = 'manual';
+srcRefl.ShutterControl = 'relative';
+srcRefl.Shutter = 210;
+srcRefl.FrameRate = '30';
 
 
 % vidBgd = videoinput('dcam', 1, 'Y8_1024x768');
@@ -135,18 +213,22 @@ for iIteration = 1:nIterations
                 %% display the phase mask
                 
                 % sending image to SLM
-                BLloadImageFrame(FrameNum,currentMask)
-                BLSendImageToSLM(FrameNum);
-     
-               
+                % BNS_LoadImageFrame(FrameNum, imageData, handles);
+                % to replace BNS_LoadImageFrame
+                pImage = libpointer('uint8Ptr',currentMask);
+                calllib('Interface','WriteFrameBuffer',FrameNum, pImage, 512);
+                
+                % BNS_SendImageFrameToSLM(FrameNum);
+                calllib('Interface','SelectImage',FrameNum);
+                pause(0.1);
                 
                 % getting response from CCD
                 % snapshot = getsnapshot(vidobj);
 %                 trigger(vidTrans);
 %                 snapshotTrans = getdata(vidTrans);
                 
-               
-                snapshotRefl = BLGetImage(vidRefl);
+                trigger(vidRefl);
+                snapshotRefl = getdata(vidRefl);
                 
 %                 trigger(vidBgd);
 %                 snapshotBgd = getdata(vidBgd);
@@ -166,16 +248,18 @@ for iIteration = 1:nIterations
                 
                 %% display the blank control
                 if (phase == 0) % && (mod(n,64) == 1) && (mod(m,64) == 1)
-                    
-                    % sending blank image to SLM
-                    BLSendImageToSLM(2);
+                    % sending image to SLM
+                    % BNS_SendImageFrameToSLM(2);
+                    calllib('Interface','SelectImage',2);
+                    pause(0.1);
                     
                     % getting response from CCD
                     % snapshot = getsnapshot(vidobj);
 %                     trigger(vidTrans);
 %                     snapshotTransCtrl = getdata(vidTrans);
                     
-                 snapshotReflCtrl = BLGetImage(vidRefl);
+                    trigger(vidRefl);
+                    snapshotReflCtrl = getdata(vidRefl);
                     
 %                     trigger(vidBgd);
 %                     snapshotBgdCtrl = getdata(vidBgd);
@@ -244,12 +328,18 @@ finalMask = bestMask;
 save(phaseMaskPath,'finalMask');
 fclose(fileID);
 
-BLCloseCCD(vid);
+stop(vidRefl);
+delete(vidRefl);
+close(gcf);
 % stop(vidBgd);
 % delete(vidBgd);
 % close(gcf);
-BLCloseSLM;
+calllib('Interface','SLMPower', false);
+calllib('Interface','Deconstructor');
+unloadlibrary('Interface');
 
 sendEmail;
 % time = toc;
 end
+
+
