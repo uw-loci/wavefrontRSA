@@ -1,4 +1,4 @@
-function [  ] = BLInitializeLog( directory, fileName, nInputDevices )
+function [ fileID ] = BLInitializeLog( directory, fileName, nInputDevices )
 %BLINITIALIZELOG initialize a log file in txt format with fields
 %iteration(itr), row, col, phase, best score, score and control score.
 %Score and control score are numbered up to three devices. 
@@ -18,12 +18,12 @@ fileID = fopen(filePath,'w');
 switch nInputDevices
     case 1 
         fprintf(fileID,'%3s %3s %3s %5s %10s %10s %10s\r\n','itr', 'row',... 
-        'col', 'phase', 'best score', 'score', 'ctrl score');
+        'col', 'phase', 'bestscore', 'score1', 'ctrlscore1');
     case 2
-        fprintf(fileID,'%3s %3s %3s %5s %10s %10s %10s\r\n','itr', 'row',...
+        fprintf(fileID,'%3s %3s %3s %5s %10s %10s %10s %10s %10s\r\n','itr', 'row',...
          'col', 'phase', 'bestscore','score1', 'ctrlscore1', 'score2', 'ctrlscore2');
     case 3
-        fprintf(fileID,'%3s %3s %3s %5s %10s %10s %10s\r\n','itr', 'row',...
+        fprintf(fileID,'%3s %3s %3s %5s %10s %10s %10s %10s %10s %10s %10s\r\n','itr', 'row',...
          'col', 'phase', 'bestscore', 'score1', 'ctrlscore1', 'score2',...
          'ctrlscore2', 'score3', 'ctrlscore3');
     otherwise 
